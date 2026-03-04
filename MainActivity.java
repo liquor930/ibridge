@@ -188,7 +188,8 @@ public class MainActivity extends Activity {
                 builder.setPositiveButton(android.R.string.yes,
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int arg0) {
-                                mBinder.getiBridgeAdapter().stopDiscovery();
+//                                mBinder.getiBridgeAdapter().stopDiscovery();
+                                BluetoothIBridgeAdapter.sharedInstance(null).stopDiscovery();;
                                 finishAndRemoveTask();
                             }
                         }).setNegativeButton(android.R.string.no,

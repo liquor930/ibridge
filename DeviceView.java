@@ -64,6 +64,23 @@ public class DeviceView extends Screen implements EventReceiver {
                 String addr = Search_ADDR.getText().toString();
                 String rssi = Search_RSSI.getText().toString();
                 int convertedNumber = 0;
+
+                if (mAdapter == null) {
+                    // 替换为你App中创建BluetoothIBridgeAdapter实例的真实逻辑
+                    // 示例：从上下文/全局单例中获取或重新创建Adapter
+                    mAdapter = BluetoothIBridgeAdapter.sharedInstance(null);
+                    // 重新注册事件接收器（和setBluetoothAdapter逻辑对齐）
+                    mAdapter.registerEventReceiver(DeviceView.this);
+                    // 提示用户稍等（可选）
+                    Toast.makeText(context, "正在初始化蓝牙适配器...", Toast.LENGTH_SHORT).show();
+
+                    // 若创建失败，直接提示并返回
+                    if (mAdapter == null) {
+                        Toast.makeText(context, "蓝牙适配器初始化失败，请检查权限后重试", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                }
+
                 if (mAdapter != null) {
                     if (mClassicSelected.isChecked()) {
                         try {
