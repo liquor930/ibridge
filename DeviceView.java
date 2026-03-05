@@ -68,11 +68,11 @@ public class DeviceView extends Screen implements EventReceiver {
                 if (mAdapter == null) {
                     // 替换为你App中创建BluetoothIBridgeAdapter实例的真实逻辑
                     // 示例：从上下文/全局单例中获取或重新创建Adapter
-                    mAdapter = BluetoothIBridgeAdapter.sharedInstance(null);
+                    mAdapter = BluetoothIBridgeAdapter.sharedInstance(context);
                     // 重新注册事件接收器（和setBluetoothAdapter逻辑对齐）
                     mAdapter.registerEventReceiver(DeviceView.this);
                     // 提示用户稍等（可选）
-                    Toast.makeText(context, "正在初始化蓝牙适配器...", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(context, "正在初始化蓝牙适配器...", Toast.LENGTH_SHORT).show();
 
                     // 若创建失败，直接提示并返回
                     if (mAdapter == null) {
@@ -413,12 +413,30 @@ public class DeviceView extends Screen implements EventReceiver {
     }
 
     public void setBluetoothAdapter(BluetoothIBridgeAdapter adapter) {
+        // 第一步：先注销旧适配器的接收器（防止内存泄漏+空指针）
+        if (mAdapter != null) {
+            try {
+                mAdapter.unregisterEventReceiver(this);
+            } catch (Exception e) {
+                // 捕获注销异常，避免崩溃
+                e.printStackTrace();
+            }
+            mAdapter = null;
+        }
+
+        // 第二步：仅当新adapter非空时，赋值并注册接收器
         if (adapter != null) {
             mAdapter = adapter;
-            mAdapter.registerEventReceiver(this);
-        } else if (mAdapter != null) {
-            mAdapter.unregisterEventReceiver(this);
-            mAdapter = null;
+            // 增加二次空值校验，兜底防止adapter实际为null
+            if (mAdapter != null) {
+                try {
+                    mAdapter.registerEventReceiver(this);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Toast.makeText(mContext, "蓝牙适配器注册失败", Toast.LENGTH_SHORT).show();
+                    mAdapter = null; // 注册失败则置空，避免后续误用
+                }
+            }
         }
     }
 }

@@ -233,11 +233,11 @@ public class TestService extends Service implements EventReceiver {
 				Log.d(TAG, "收到权限请求结果：" + isAllGranted);
 				if (isAllGranted) {
 					// 权限授予，初始化蓝牙业务
-                    Toast.makeText(TestService.this, "蓝牙权限已授予，初始化蓝牙业务", Toast.LENGTH_LONG).show();
+                    Toast.makeText(TestService.this, "蓝牙权限已授予，初始化蓝牙业务", Toast.LENGTH_SHORT).show();
 					initBleBusiness();
 				} else {
 					// 权限拒绝，停止服务并提示
-					Toast.makeText(TestService.this, "蓝牙权限被拒绝，服务无法运行", Toast.LENGTH_LONG).show();
+					Toast.makeText(TestService.this, "蓝牙权限被拒绝，服务无法运行", Toast.LENGTH_SHORT).show();
 					stopSelf(); // 停止服务，避免无权限运行崩溃
 				}
 			}
