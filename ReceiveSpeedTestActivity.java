@@ -1,8 +1,7 @@
-﻿package com.brt.ibridge;
+package com.brt.ibridge;
 
 import android.app.Activity;
 import android.os.Bundle;
-import com.brt.ibridge.util.ViewFinder;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;

@@ -1,4 +1,4 @@
-﻿package com.brt.ibridge;
+package com.brt.ibridge;
 
 import android.app.Activity;
 import android.content.Context;

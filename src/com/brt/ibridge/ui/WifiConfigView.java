@@ -1,4 +1,4 @@
-﻿package com.brt.ibridge.ui;
+package com.brt.ibridge.ui;
 
 import com.brt.ibridge.Switcher;
 

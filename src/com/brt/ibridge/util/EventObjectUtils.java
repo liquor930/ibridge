@@ -1,4 +1,4 @@
-﻿package com.brt.ibridge.util;
+package com.brt.ibridge.util;
 
 import android.util.Log;
 
