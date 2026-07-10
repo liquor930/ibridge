@@ -1,4 +1,4 @@
-﻿package com.brt.ibridge.ui;
+package com.brt.ibridge.ui;
 
 import com.brt.ibridge.MainActivity;
 import com.brt.ibridge.ReceiveSpeedTestActivity;
@@ -52,12 +52,14 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class PresentView extends Screen implements DataReceiver, EventReceiver {
     private static final String TAG = "PresentView";
     private static int MAX_BYTE = 1024;
     private static int MAX_LENGTH = 1024 * 10;
-    private static String AUTO_TEXT = "auto test is runing, make sure enough long.++";
+    private static String AUTO_TEXT = "auto test is running, make sure enough long.++";
     private static final String iBridge_PATH = "/iBridge";
     private static final String LOG_FILE = "iBridge.log";
     private boolean BtnEnable = true;
@@ -115,6 +117,7 @@ public class PresentView extends Screen implements DataReceiver, EventReceiver {
 	private MyHandler myHandler;
 	private BluetoothIBridgeDevice mSelectedDevice;
 
+	private final ExecutorService mSendExecutor = Executors.newSingleThreadExecutor();
 	private ConnectAndDisconnectThread connectAndDisconnectThread;
 	private TransmissionThread transThread;
 
@@ -193,10 +196,9 @@ public class PresentView extends Screen implements DataReceiver, EventReceiver {
             @Override
             public void onClick(View v) {
                 // TODO Auto-generated method stub
-                new Thread() {
+                mSendExecutor.execute(new Runnable() {
                     @Override
                     public void run() {
-                        super.run();
                         String input = inputText.getText().toString().trim();
                         byte[] data = null;
                         if (hexSendCheckBox.isChecked() && hexStrCheck(input)) {
@@ -218,7 +220,7 @@ public class PresentView extends Screen implements DataReceiver, EventReceiver {
                             mAdapter.send(mSelectedDevice, data, data.length);
                         }
                     }
-                }.start();
+                });
             }
         });
 
@@ -306,10 +308,10 @@ public class PresentView extends Screen implements DataReceiver, EventReceiver {
 		resultText = find(R.id.receiveData);
 		myHandler = new MyHandler(this);
 
-		resultText.setText("[Conn]:杩炴帴鍜屾柇寮€褰撳墠璁惧\n" +
-				"[Conn(n)]:杩炴帴鏂紑锛屽惊鐜痭娆n" +
-				"[Send]:鍙戦€乕to send]鏂囨湰妗嗕腑鐨勬暟鎹甛n" +
-				"[Send(n)]:姣忔鍙戦€乕data]鏂囨湰妗嗕腑鎸囧畾澶уぇ灏忕殑鏁版嵁(鍗曚綅鏄疜B),杩炵画鍙戦€乕times]娆?涓ゆ鍙戦€佷箣闂撮棿闅擺/]ms");
+		resultText.setText("[Conn]:连接和断开当前设备\n" +
+				"[Conn(n)]:连接断开，循环n次\n" +
+				"[Send]:发送[to send]文本框中的数据\n" +
+                "[Send(n)]:每次发送[data]文本框中指定大小的数据(单位是KB),连续发送[times]次,两次发送之间间隔[interval]ms");
 		resultText.setTextColor(Color.GRAY);
 		resultText.setTextSize(16);
 		speedText.setTextColor(Color.GRAY);
@@ -381,7 +383,7 @@ public class PresentView extends Screen implements DataReceiver, EventReceiver {
 			@Override
 			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 				if (!isChecked) {
-					// 涓嶅厑璁稿弽閫夊埌鏃犻€変腑鐘舵€?
+					// 不允许反选到无选中状态
 					if (!highPriorityConnectLE.isChecked()
 							&& !balancedPriorityConnectLE.isChecked()
 							&& !lowPowerPriorityConnectLE.isChecked()) {
@@ -390,7 +392,7 @@ public class PresentView extends Screen implements DataReceiver, EventReceiver {
 					}
 					return;
 				}
-				// 閫変腑褰撳墠 鈫?鍙栨秷鍏朵粬
+				// 选中当前->取消其他
 				if (buttonView != highPriorityConnectLE) highPriorityConnectLE.setChecked(false);
 				if (buttonView != balancedPriorityConnectLE) balancedPriorityConnectLE.setChecked(false);
 				if (buttonView != lowPowerPriorityConnectLE) lowPowerPriorityConnectLE.setChecked(false);
@@ -596,12 +598,8 @@ public class PresentView extends Screen implements DataReceiver, EventReceiver {
 	
 	private void dealData(byte[] buffer , int len){
 		String result = "";
-		int length = 0;
-		if(len > buffer.length){
-			length = 1024;
-		}else{
-			length = len;
-		}
+		int safeLen = Math.min(len, buffer.length);
+		int length = safeLen;
 		if (hexRecvCheckBox.isChecked()) {
 			byte[] b = new byte[len];
 			System.arraycopy(buffer, 0, b, 0, len);
@@ -704,7 +702,7 @@ public class PresentView extends Screen implements DataReceiver, EventReceiver {
 		private byte[] mData;
 
 		public TransmissionThread(int Count, int Time){
-			count = Math.min(Count, 64); // 涓婇檺淇濇姢
+			count = Math.min(Count, 64); // 上限保护
 			time = Time;
 			int size = MAX_BYTE * count;
 			mData = new byte[size];
@@ -875,6 +873,7 @@ public class PresentView extends Screen implements DataReceiver, EventReceiver {
 
 	public void onDestroy() {
 		mContext.unregisterReceiver(mReceiver);
+		mSendExecutor.shutdownNow();
 		if (mAdapter != null) {
 			mAdapter.unregisterDataReceiver(this);
 			mAdapter.unregisterEventReceiver(this);
@@ -952,7 +951,7 @@ public class PresentView extends Screen implements DataReceiver, EventReceiver {
 		if ((connectAndDisconnectThread != null) && (connectAndDisconnectThread.isAlive())) {
 			connectAndDisconnectThread.disconnected();
 		}
-		// 鏂紑杩炴帴鏃惰嚜鍔ㄥ仠姝㈣繘琛屼腑鐨勬祴璇曠嚎绋?
+		// 断开连接时自动停止进行中的测试线程
 		if (transThread != null && transThread.isAlive()) {
 			transThread.cancel();
 			try { transThread.join(2000); } catch (InterruptedException ignored) {}
@@ -978,7 +977,7 @@ public class PresentView extends Screen implements DataReceiver, EventReceiver {
 	}
 	
 	/**
-	 * 璁板綍鏃ュ織鍒版枃浠讹紙鎳掑姞杞藉崟渚嬪啓鍏ュ櫒锛岄伩鍏嶉绻佹墦寮€鍏抽棴锛?
+	 * 记录日志到文件（懒加载单例写入器，避免频繁打开关闭）
 	 */
 	public static void logf(String tag, String content) {
 		LogWriter.getInstance().write(tag, content);
@@ -1020,9 +1019,9 @@ public class PresentView extends Screen implements DataReceiver, EventReceiver {
 	}
 
 	/**
-	 * 瀛楃涓茶浆鎹㈡垚鍗佸叚杩涘埗瀛楃涓?
-	 * @param String str 寰呰浆鎹㈢殑ASCII瀛楃涓?
-	 * @return String 姣忎釜Byte涔嬮棿绌烘牸鍒嗛殧锛屽: [61 6C 6B]
+	 * 字符串转换成十六进制字符串
+	 * @param String str 待转换的ASCII字符串
+	 * @return String 每个Byte之间空格分隔，如: [61 6C 6B]
 	 */
 	public static String str2HexStr(String str, boolean space)
 	{
@@ -1060,9 +1059,9 @@ public class PresentView extends Screen implements DataReceiver, EventReceiver {
 	}
 
 	/**
-	 * 鍗佸叚杩涘埗杞崲瀛楃涓?
-	 * @param String str Byte瀛楃涓?Byte涔嬮棿鏃犲垎闅旂 濡?[616C6B])
-	 * @return String 瀵瑰簲鐨勫瓧绗︿覆
+	 * 十六进制转换字符串
+	 * @param String str Byte字符串,Byte之间无分隔符 濡?[616C6B])
+	 * @return String 对应的字符串
 	 */
 	public static String hexStr2Str(String hexStr)
 	{
@@ -1081,9 +1080,9 @@ public class PresentView extends Screen implements DataReceiver, EventReceiver {
 	}
 
 	/**
-	 * bytes杞崲鎴愬崄鍏繘鍒跺瓧绗︿覆
-	 * @param byte[] b byte鏁扮粍
-	 * @return String 姣忎釜Byte鍊间箣闂寸┖鏍煎垎闅?
+	 * bytes转换成十六进制字符串
+	 * @param byte[] b byte数组
+	 * @return String 每个Byte值之间空格分隔
 	 */
 	public static String byte2HexStr(byte[] b, boolean space)
 	{
@@ -1101,8 +1100,8 @@ public class PresentView extends Screen implements DataReceiver, EventReceiver {
 	}
 
 	/**
-	 * bytes瀛楃涓茶浆鎹负Byte鍊?
-	 * @param String src Byte瀛楃涓诧紝姣忎釜Byte涔嬮棿娌℃湁鍒嗛殧绗?
+	 * bytes字符串转换为Byte值
+	 * @param String src Byte字符串，每个Byte之间没有分隔符
 	 * @return byte[]
 	 */
 	public static byte[] hexStr2Bytes(String src)
@@ -1121,9 +1120,9 @@ public class PresentView extends Screen implements DataReceiver, EventReceiver {
 	}
 
 	/**
-	 * String鐨勫瓧绗︿覆杞崲鎴恥nicode鐨凷tring
-	 * @param String strText 鍏ㄨ瀛楃涓?
-	 * @return String 姣忎釜unicode涔嬮棿鏃犲垎闅旂
+	 * String的字符串转换成Unicode的String
+	 * @param String strText 全角字符串
+	 * @return String 每个unicode之间无分隔符
 	 * @throws Exception
 	 */
 	public static String strToUnicode(String strText)
@@ -1147,9 +1146,9 @@ public class PresentView extends Screen implements DataReceiver, EventReceiver {
 	}
 
 	/**
-	 * unicode鐨凷tring杞崲鎴怱tring鐨勫瓧绗︿覆
-	 * @param String hex 16杩涘埗鍊煎瓧绗︿覆 锛堜竴涓猽nicode涓?byte锛?
-	 * @return String 鍏ㄨ瀛楃涓?
+	 * Unicode的String转换成String的字符串
+	 * @param String hex 16进制值字符串 （一个Unicode为2byte）
+	 * @return String 全角字符串
 	 */
 	public static String unicodeToString(String hex)
 	{
@@ -1160,9 +1159,9 @@ public class PresentView extends Screen implements DataReceiver, EventReceiver {
 			String s = hex.substring(i * 6, (i + 1) * 6);
 			// 楂樹綅闇€瑕佽ˉ涓?0鍐嶈浆
 			String s1 = s.substring(2, 4) + "00";
-			// 浣庝綅鐩存帴杞?
+			// 低位直接转
 			String s2 = s.substring(4);
-			// 灏?6杩涘埗鐨剆tring杞负int
+			// 将16进制的String转为int
 			int n = Integer.valueOf(s1, 16) + Integer.valueOf(s2, 16);
 			// 灏唅nt杞崲涓哄瓧绗?
 			char[] chars = Character.toChars(n);

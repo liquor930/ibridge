@@ -23,6 +23,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Binder;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.PowerManager;
@@ -50,6 +51,8 @@ public class TestService extends Service implements EventReceiver {
 	private Sensor sensor;
 	private int count = 0;
 	private double mag_value = 0;
+	private Handler mToastHandler;
+	private SensorEventListener mMagListener;
 
 	static double magThreshold = 0;
 
@@ -176,7 +179,7 @@ public class TestService extends Service implements EventReceiver {
 
 		sensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
 		sensor = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
-		sensorManager.registerListener(new SensorEventListener() {
+		mMagListener = new SensorEventListener() {
 			@Override
 			public void onSensorChanged(SensorEvent event) {
 				if(count++ == 20) {
@@ -198,7 +201,8 @@ public class TestService extends Service implements EventReceiver {
 			public void onAccuracyChanged(Sensor sensor, int i) {
 
 			}
-		}, sensor, sensorManager.SENSOR_DELAY_NORMAL);
+		};
+		sensorManager.registerListener(mMagListener, sensor, sensorManager.SENSOR_DELAY_NORMAL);
 
 		if (TestService.isNotificationListenerServiceEnabled(this)) {
 			toggleNotificationListenerService();
@@ -278,9 +282,14 @@ public class TestService extends Service implements EventReceiver {
 		if (permissionResultReceiver != null) {
 			unregisterReceiver(permissionResultReceiver);
 		}
+		if (sensorManager != null && mMagListener != null) {
+			sensorManager.unregisterListener(mMagListener);
+		}
 		releaseWakeLock();
-		mAdapter.unregisterEventReceiver(this);
-		mAdapter.destroy();
+		if (mAdapter != null) {
+			mAdapter.unregisterEventReceiver(this);
+			mAdapter.destroy();
+		}
 		super.onDestroy();
 	}
 
@@ -296,22 +305,16 @@ public class TestService extends Service implements EventReceiver {
 	}
 
 	private void showToast(String msg){
-		ToastThread toastThread = new ToastThread(msg);
-		toastThread.start();
-	}
-
-	private class ToastThread extends Thread {
-		private String msg;
-
-		public ToastThread(String msg) {
-			this.msg = msg;
+		if (mToastHandler == null) {
+			mToastHandler = new Handler(Looper.getMainLooper());
 		}
-
-		public void run() {
-			Looper.prepare();
-			Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
-			Looper.loop();
-		}
+		final String message = msg;
+		mToastHandler.post(new Runnable() {
+			@Override
+			public void run() {
+				Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+			}
+		});
 	}
 
 	private static final String CHANNEL_ID = "ibridge_foreground";

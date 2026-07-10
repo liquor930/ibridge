@@ -1,4 +1,4 @@
-﻿package com.brt.ibridge.util;
+package com.brt.ibridge.util;
 
 import android.util.Log;
 
@@ -47,7 +47,8 @@ public class EventObjectUtils {
 				try {
 					obj.wait(millis);
 				} catch (InterruptedException e) {
-					Log.e(TAG, "Exception", e);
+					Log.e(TAG, "waitEvent interrupted", e);
+					Thread.currentThread().interrupt();
 				}
 			}
 		}

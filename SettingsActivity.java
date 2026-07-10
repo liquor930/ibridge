@@ -1,4 +1,4 @@
-﻿package com.brt.ibridge;
+package com.brt.ibridge;
 
 import android.app.Activity;
 import android.content.Context;
@@ -8,6 +8,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,6 +36,7 @@ import android.text.TextUtils;
 import android.content.ComponentName;
 
 public class SettingsActivity extends Activity implements BluetoothIBridgeAdapter.EventReceiver {
+    private static final String TAG = "SettingsActivity";
     PackageManager pm;
     private List<PackageInfo> pakageinfos;
     private ListView mAppListView;
@@ -70,6 +72,7 @@ public class SettingsActivity extends Activity implements BluetoothIBridgeAdapte
         try {
             demoVersionName = pm.getPackageInfo(getPackageName(), 0).versionName;
         } catch (PackageManager.NameNotFoundException e) {
+            Log.w(TAG, "Failed to get version name", e);
             demoVersionName = "0.0";
         }
         bluetoothIBridgeAdapter = BluetoothIBridgeAdapter.sharedInstance(null);
@@ -197,7 +200,14 @@ public class SettingsActivity extends Activity implements BluetoothIBridgeAdapte
         setMagThresholdButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                TestService.magThreshold = Double.valueOf(magThresholdEditView.getText().toString()).doubleValue();
+                try {
+                    String thresholdStr = magThresholdEditView.getText().toString();
+                    if (thresholdStr != null && !thresholdStr.isEmpty()) {
+                        TestService.magThreshold = Double.parseDouble(thresholdStr);
+                    }
+                } catch (NumberFormatException e) {
+                    Log.e(TAG, "Invalid magThreshold input", e);
+                }
             }
         });
 

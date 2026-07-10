@@ -1,8 +1,7 @@
-﻿package com.brt.ibridge;
+package com.brt.ibridge;
 
 import android.app.Activity;
 import android.os.Bundle;
-import com.brt.ibridge.util.ViewFinder;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -112,7 +111,8 @@ public class ReceiveSpeedTestActivity extends Activity implements BluetoothIBrid
         private boolean isClose = false;
 
         public MyThread() {
-            intervalTime = Long.parseLong(mEditInterval.getText().toString());
+            String intervalStr = mEditInterval.getText().toString();
+            intervalTime = (intervalStr == null || intervalStr.isEmpty()) ? 1000 : Long.parseLong(intervalStr);
         }
 
         @Override
@@ -121,8 +121,10 @@ public class ReceiveSpeedTestActivity extends Activity implements BluetoothIBrid
                 startCountDataReceived();
                 try {
                     sleep(intervalTime);
-                } catch (Exception e) {
-
+                } catch (InterruptedException e) {
+                    Log.e(TAG, "Monitor thread interrupted", e);
+                    Thread.currentThread().interrupt();
+                    break;
                 }
                 if (mBluetoothDevice.isConnected()) {
                     stopCountDataReceived();
