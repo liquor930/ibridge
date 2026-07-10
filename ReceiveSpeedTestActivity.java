@@ -1,7 +1,8 @@
-package com.brt.ibridge;
+﻿package com.brt.ibridge;
 
 import android.app.Activity;
 import android.os.Bundle;
+import com.brt.ibridge.util.ViewFinder;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -152,7 +153,7 @@ public class ReceiveSpeedTestActivity extends Activity implements BluetoothIBrid
                     myHandle.sendMessage(msg);
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                Log.e(TAG, "Exception", e);
             }
         }
 
@@ -288,3 +289,5 @@ public class ReceiveSpeedTestActivity extends Activity implements BluetoothIBrid
         Log.i(TAG, "onDataReceived");
     }
 }
+
+

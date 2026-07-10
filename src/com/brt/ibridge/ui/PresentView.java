@@ -1,4 +1,10 @@
-package com.brt.ibridge;
+﻿package com.brt.ibridge.ui;
+
+import com.brt.ibridge.MainActivity;
+import com.brt.ibridge.ReceiveSpeedTestActivity;
+import com.brt.ibridge.Switcher;
+import com.brt.ibridge.util.EventObjectUtils;
+import com.brt.ibridge.model.Throughput;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -11,7 +17,6 @@ import android.content.IntentFilter;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
@@ -35,12 +40,8 @@ import com.brt.bluetooth.ibridge.BluetoothIBridgeAdapter;
 import com.brt.bluetooth.ibridge.BluetoothIBridgeAdapter.DataReceiver;
 import com.brt.bluetooth.ibridge.BluetoothIBridgeAdapter.EventReceiver;
 import com.brt.bluetooth.ibridge.BluetoothIBridgeDevice;
-import com.brt.ibridge.common.Throughput;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+
 import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
 import java.text.DecimalFormat;
@@ -131,7 +132,7 @@ public class PresentView extends Screen implements DataReceiver, EventReceiver {
 	public PresentView(final Context context, View view) {
 		super(context, view);
 
-		connBtn = (Button) findViewById(R.id.connect);
+		connBtn = find(R.id.connect);
 		connBtn.setOnClickListener(new OnClickListener() {
 
 			@Override
@@ -152,7 +153,7 @@ public class PresentView extends Screen implements DataReceiver, EventReceiver {
 			}
 		});
 
-		autoSendBtn = (Button) findViewById(R.id.sendTestSpeed);
+		autoSendBtn = find(R.id.sendTestSpeed);
 		autoSendBtn.setOnClickListener(new OnClickListener() {
 
 			@Override
@@ -183,7 +184,7 @@ public class PresentView extends Screen implements DataReceiver, EventReceiver {
 			}
 		});
 
-		sendBtn = (Button) findViewById(R.id.sendInput);
+		sendBtn = find(R.id.sendInput);
 		sendBtn.setOnClickListener(new OnClickListener() {
 
             @Override
@@ -218,7 +219,7 @@ public class PresentView extends Screen implements DataReceiver, EventReceiver {
             }
         });
 
-        clearBtn = (Button) findViewById(R.id.clear);
+        clearBtn = find(R.id.clear);
         clearBtn.setOnClickListener(new OnClickListener() {
 
 			@Override
@@ -230,7 +231,7 @@ public class PresentView extends Screen implements DataReceiver, EventReceiver {
 				clearScreen();
 			}});
 		
-		autoConnBtn = (Button) findViewById(R.id.start);
+		autoConnBtn = find(R.id.start);
 		autoConnBtn.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -267,7 +268,7 @@ public class PresentView extends Screen implements DataReceiver, EventReceiver {
 			}
 		});
 
-		settingBtn = (Button)findViewById(R.id.connectionsetting);
+		settingBtn = find(R.id.connectionsetting);
 		settingBtn.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -275,7 +276,7 @@ public class PresentView extends Screen implements DataReceiver, EventReceiver {
 				mPopupWindow.showAtLocation(settingBtn, Gravity.BOTTOM, 0, 0);
 			}
 		});
-        rcvBtn = (Button)findViewById(R.id.btnRcv);
+        rcvBtn = find(R.id.btnRcv);
         rcvBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -293,19 +294,19 @@ public class PresentView extends Screen implements DataReceiver, EventReceiver {
 
 		initPopupWindows();
 
-		scrollView = (ScrollView) findViewById(R.id.scorllView);
-		dataText = (EditText) findViewById(R.id.writeData);
-		timesText = (EditText) findViewById(R.id.writeTime);
-		intervalText = (EditText) findViewById(R.id.interval);
-		inputText = (EditText) findViewById(R.id.input);
-		speedText = (TextView) findViewById(R.id.speed);
-		resultText = (TextView) findViewById(R.id.receiveData);
+		scrollView = find(R.id.scorllView);
+		dataText = find(R.id.writeData);
+		timesText = find(R.id.writeTime);
+		intervalText = find(R.id.interval);
+		inputText = find(R.id.input);
+		speedText = find(R.id.speed);
+		resultText = find(R.id.receiveData);
 		myHandler = new MyHandler(this);
 
-		resultText.setText("[Conn]:连接和断开当前设备\n" +
-				"[Conn(n)]:连接断开，循环n次\n" +
-				"[Send]:发送[to send]文本框中的数据\n" +
-				"[Send(n)]:每次发送[data]文本框中指定大大小的数据(单位是KB),连续发送[times]次,两次发送之间间隔[/]ms");
+		resultText.setText("[Conn]:杩炴帴鍜屾柇寮€褰撳墠璁惧\n" +
+				"[Conn(n)]:杩炴帴鏂紑锛屽惊鐜痭娆n" +
+				"[Send]:鍙戦€乕to send]鏂囨湰妗嗕腑鐨勬暟鎹甛n" +
+				"[Send(n)]:姣忔鍙戦€乕data]鏂囨湰妗嗕腑鎸囧畾澶уぇ灏忕殑鏁版嵁(鍗曚綅鏄疜B),杩炵画鍙戦€乕times]娆?涓ゆ鍙戦€佷箣闂撮棿闅擺/]ms");
 		resultText.setTextColor(Color.GRAY);
 		resultText.setTextSize(16);
 		speedText.setTextColor(Color.GRAY);
@@ -373,38 +374,34 @@ public class PresentView extends Screen implements DataReceiver, EventReceiver {
 		autoConnectTimes = (EditText)popupView.findViewById(R.id.autoConnTimes);
 		autoConnectInterval = (EditText)popupView.findViewById(R.id.autoConnInterval);
 
-		highPriorityConnectLE = (CheckBox)popupView.findViewById(R.id.connectLEWithHighPriority);
-		highPriorityConnectLE.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+		CompoundButton.OnCheckedChangeListener priorityListener = new CompoundButton.OnCheckedChangeListener() {
 			@Override
 			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-				if (isChecked) {
-					balancedPriorityConnectLE.setChecked(false);
-					lowPowerPriorityConnectLE.setChecked(false);
+				if (!isChecked) {
+					// 涓嶅厑璁稿弽閫夊埌鏃犻€変腑鐘舵€?
+					if (!highPriorityConnectLE.isChecked()
+							&& !balancedPriorityConnectLE.isChecked()
+							&& !lowPowerPriorityConnectLE.isChecked()) {
+						buttonView.setChecked(true);
+						return;
+					}
+					return;
 				}
+				// 閫変腑褰撳墠 鈫?鍙栨秷鍏朵粬
+				if (buttonView != highPriorityConnectLE) highPriorityConnectLE.setChecked(false);
+				if (buttonView != balancedPriorityConnectLE) balancedPriorityConnectLE.setChecked(false);
+				if (buttonView != lowPowerPriorityConnectLE) lowPowerPriorityConnectLE.setChecked(false);
 			}
-		});
+		};
+
+		highPriorityConnectLE = (CheckBox)popupView.findViewById(R.id.connectLEWithHighPriority);
+		highPriorityConnectLE.setOnCheckedChangeListener(priorityListener);
 
 		balancedPriorityConnectLE = (CheckBox)popupView.findViewById(R.id.connectLEWithBalancedPriority);
-		balancedPriorityConnectLE.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-			@Override
-			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-				if (isChecked) {
-					highPriorityConnectLE.setChecked(false);
-					lowPowerPriorityConnectLE.setChecked(false);
-				}
-			}
-		});
+		balancedPriorityConnectLE.setOnCheckedChangeListener(priorityListener);
 
 		lowPowerPriorityConnectLE = (CheckBox)popupView.findViewById(R.id.connectLEWithLowPowerPriority);
-		lowPowerPriorityConnectLE.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-			@Override
-			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-				if (isChecked) {
-					highPriorityConnectLE.setChecked(false);
-					balancedPriorityConnectLE.setChecked(false);
-				}
-			}
-		});
+		lowPowerPriorityConnectLE.setOnCheckedChangeListener(priorityListener);
 
 		mPopupWindow.setFocusable(true);
 		mPopupWindow.setTouchable(true);
@@ -610,7 +607,7 @@ public class PresentView extends Screen implements DataReceiver, EventReceiver {
 			try {
 				result = new String(buffer, 0, length, "utf-8");
 			} catch (UnsupportedEncodingException e) {
-				e.printStackTrace();
+				Log.e(TAG, "Exception", e);
 			}
 		}
 		myHandler.obtainMessage(MyHandler.MSG_RECEIVED_STRING, result)
@@ -701,19 +698,19 @@ public class PresentView extends Screen implements DataReceiver, EventReceiver {
 		private final int count;
 		private final int time;
 		private boolean mCancelFlag = false;
-		
+		private byte[] mData;
+
 		public TransmissionThread(int Count, int Time){
-			count = Count;
+			count = Math.min(Count, 64); // 涓婇檺淇濇姢
 			time = Time;
-		}
-		
-		public void run(){
-			byte[] data = new byte[MAX_BYTE * count];
+			int size = MAX_BYTE * count;
+			mData = new byte[size];
 			Random random = new Random();
-			for (int i = 0; i < data.length; i++) {
+			for (int i = 0; i < size; i++) {
 				int is = random.nextInt(5);
-				data[i] = (byte)(0x35 + is);
+				mData[i] = (byte)(0x35 + is);
 			}
+		}
 			long start = System.currentTimeMillis();
 			long finish;
 			float speed;
@@ -733,7 +730,7 @@ public class PresentView extends Screen implements DataReceiver, EventReceiver {
 			for (int i = 0; (i < time) && (mCancelFlag == false); i++) {
 				if (null != mSelectedDevice && mAdapter != null
 						&& mSelectedDevice.isConnected()) {
-					mAdapter.send(mSelectedDevice, data, data.length);
+					mAdapter.send(mSelectedDevice, mData, mData.length);
 					finish = System.currentTimeMillis();
 					throughput.datalength += data.length;
 					speed = (data.length * i)/((float)(finish - start)/1000);
@@ -748,7 +745,7 @@ public class PresentView extends Screen implements DataReceiver, EventReceiver {
 							Thread.sleep(Integer.parseInt(intervalText.getText().toString().trim()));
 						} catch (InterruptedException e) {
 							// TODO Auto-generated catch block
-							e.printStackTrace();
+							Log.e(TAG, "Exception", e);
 						}
 					}
 				} else {
@@ -793,7 +790,7 @@ public class PresentView extends Screen implements DataReceiver, EventReceiver {
 				try {
 					Thread.sleep(Integer.parseInt(autoConnectInterval.getText().toString().trim()));
 				} catch (Exception e) {
-					e.printStackTrace();
+					Log.e(TAG, "Exception", e);
 				}
 				//Connect
 				startTime = System.currentTimeMillis();
@@ -948,10 +945,17 @@ public class PresentView extends Screen implements DataReceiver, EventReceiver {
 		revLength = 0;
 		if ((connectAndDisconnectThread != null) && (connectAndDisconnectThread.isAlive())) {
 			connectAndDisconnectThread.disconnected();
-		} else {
+		}
+		// 鏂紑杩炴帴鏃惰嚜鍔ㄥ仠姝㈣繘琛屼腑鐨勬祴璇曠嚎绋?
+		if (transThread != null && transThread.isAlive()) {
+			transThread.cancel();
+			try { transThread.join(2000); } catch (InterruptedException ignored) {}
+			transThread = null;
+		}
+		if (!(connectAndDisconnectThread != null && connectAndDisconnectThread.isAlive())) {
 			refreshScreen();
 		}
-		if (removeBondWhileDisconnectCheckBox.isChecked()) {
+		if (removeBondWhileDisconnectCheckBox.isChecked() && mSelectedDevice != null) {
 			mSelectedDevice.removeBond();
 		}
 		mThroughputTest.clear();
@@ -967,41 +971,52 @@ public class PresentView extends Screen implements DataReceiver, EventReceiver {
 									  String exceptionMsg) {
 	}
 	
+	/**
+	 * 璁板綍鏃ュ織鍒版枃浠讹紙鎳掑姞杞藉崟渚嬪啓鍏ュ櫒锛岄伩鍏嶉绻佹墦寮€鍏抽棴锛?
+	 */
 	public static void logf(String tag, String content) {
-		String dir = Environment.getExternalStorageDirectory().toString()
-				+ iBridge_PATH;
-		File d = new File(dir);
-		if (!d.exists()) {
-			d.mkdir();
+		LogWriter.getInstance().write(tag, content);
+	}
+
+	private static class LogWriter {
+		private static LogWriter sInstance;
+		private FileOutputStream mStream;
+
+		static synchronized LogWriter getInstance() {
+			if (sInstance == null) {
+				sInstance = new LogWriter();
+			}
+			return sInstance;
 		}
 
-		String path = Environment.getExternalStorageDirectory().toString()
-				+ iBridge_PATH + "/" + LOG_FILE;
-		File f = new File(path);
-		if (!f.exists()) {
+		private LogWriter() {
 			try {
-				f.createNewFile();
+				String dir = Environment.getExternalStorageDirectory().toString() + iBridge_PATH;
+				File d = new File(dir);
+				if (!d.exists()) d.mkdirs();
+				File f = new File(dir, LOG_FILE);
+				mStream = new FileOutputStream(f, true);
 			} catch (IOException e) {
-				e.printStackTrace();
+				android.util.Log.e("LogWriter", "init failed", e);
 			}
 		}
-		FileOutputStream fs;
-		try {
-			fs = new FileOutputStream(f, true);
-			fs.write(content.getBytes());
-			fs.close();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 
+		synchronized void write(String tag, String content) {
+			if (mStream != null) {
+				try {
+					mStream.write((tag + ": " + content + "\n").getBytes());
+					mStream.flush();
+				} catch (IOException e) {
+					android.util.Log.e("LogWriter", "write failed", e);
+				}
+			}
+		}
 	}
 
 	/**
-	 * 字符串转换成十六进制字符串
-	 * @param String str 待转换的ASCII字符串
-	 * @return String 每个Byte之间空格分隔，如: [61 6C 6B]
+	 * 瀛楃涓茶浆鎹㈡垚鍗佸叚杩涘埗瀛楃涓?
+	 * @param String str 寰呰浆鎹㈢殑ASCII瀛楃涓?
+	 * @return String 姣忎釜Byte涔嬮棿绌烘牸鍒嗛殧锛屽: [61 6C 6B]
 	 */
 	public static String str2HexStr(String str, boolean space)
 	{
@@ -1039,9 +1054,9 @@ public class PresentView extends Screen implements DataReceiver, EventReceiver {
 	}
 
 	/**
-	 * 十六进制转换字符串
-	 * @param String str Byte字符串(Byte之间无分隔符 如:[616C6B])
-	 * @return String 对应的字符串
+	 * 鍗佸叚杩涘埗杞崲瀛楃涓?
+	 * @param String str Byte瀛楃涓?Byte涔嬮棿鏃犲垎闅旂 濡?[616C6B])
+	 * @return String 瀵瑰簲鐨勫瓧绗︿覆
 	 */
 	public static String hexStr2Str(String hexStr)
 	{
@@ -1060,9 +1075,9 @@ public class PresentView extends Screen implements DataReceiver, EventReceiver {
 	}
 
 	/**
-	 * bytes转换成十六进制字符串
-	 * @param byte[] b byte数组
-	 * @return String 每个Byte值之间空格分隔
+	 * bytes杞崲鎴愬崄鍏繘鍒跺瓧绗︿覆
+	 * @param byte[] b byte鏁扮粍
+	 * @return String 姣忎釜Byte鍊间箣闂寸┖鏍煎垎闅?
 	 */
 	public static String byte2HexStr(byte[] b, boolean space)
 	{
@@ -1080,29 +1095,29 @@ public class PresentView extends Screen implements DataReceiver, EventReceiver {
 	}
 
 	/**
-	 * bytes字符串转换为Byte值
-	 * @param String src Byte字符串，每个Byte之间没有分隔符
+	 * bytes瀛楃涓茶浆鎹负Byte鍊?
+	 * @param String src Byte瀛楃涓诧紝姣忎釜Byte涔嬮棿娌℃湁鍒嗛殧绗?
 	 * @return byte[]
 	 */
 	public static byte[] hexStr2Bytes(String src)
 	{
-		int m=0,n=0;
-		int l=src.length()/2;
-		System.out.println(l);
+		if (src == null || src.isEmpty() || src.length() % 2 != 0) {
+			return new byte[0];
+		}
+		int l = src.length() / 2;
 		byte[] ret = new byte[l];
 		for (int i = 0; i < l; i++)
 		{
-			m=i*2+1;
-			n=m+1;
-			ret[i] = (byte)Integer.parseInt((src.substring(i*2, m) + src.substring(m,n)), 16);
+			int pos = i * 2;
+			ret[i] = (byte) Integer.parseInt(src.substring(pos, pos + 2), 16);
 		}
 		return ret;
 	}
 
 	/**
-	 * String的字符串转换成unicode的String
-	 * @param String strText 全角字符串
-	 * @return String 每个unicode之间无分隔符
+	 * String鐨勫瓧绗︿覆杞崲鎴恥nicode鐨凷tring
+	 * @param String strText 鍏ㄨ瀛楃涓?
+	 * @return String 姣忎釜unicode涔嬮棿鏃犲垎闅旂
 	 * @throws Exception
 	 */
 	public static String strToUnicode(String strText)
@@ -1119,16 +1134,16 @@ public class PresentView extends Screen implements DataReceiver, EventReceiver {
 			strHex = Integer.toHexString(intAsc);
 			if (intAsc > 128)
 				str.append("\\u" + strHex);
-			else // 低位在前面补00
+			else // 浣庝綅鍦ㄥ墠闈㈣ˉ00
 				str.append("\\u00" + strHex);
 		}
 		return str.toString();
 	}
 
 	/**
-	 * unicode的String转换成String的字符串
-	 * @param String hex 16进制值字符串 （一个unicode为2byte）
-	 * @return String 全角字符串
+	 * unicode鐨凷tring杞崲鎴怱tring鐨勫瓧绗︿覆
+	 * @param String hex 16杩涘埗鍊煎瓧绗︿覆 锛堜竴涓猽nicode涓?byte锛?
+	 * @return String 鍏ㄨ瀛楃涓?
 	 */
 	public static String unicodeToString(String hex)
 	{
@@ -1137,16 +1152,18 @@ public class PresentView extends Screen implements DataReceiver, EventReceiver {
 		for (int i = 0; i < t; i++)
 		{
 			String s = hex.substring(i * 6, (i + 1) * 6);
-			// 高位需要补上00再转
+			// 楂樹綅闇€瑕佽ˉ涓?0鍐嶈浆
 			String s1 = s.substring(2, 4) + "00";
-			// 低位直接转
+			// 浣庝綅鐩存帴杞?
 			String s2 = s.substring(4);
-			// 将16进制的string转为int
+			// 灏?6杩涘埗鐨剆tring杞负int
 			int n = Integer.valueOf(s1, 16) + Integer.valueOf(s2, 16);
-			// 将int转换为字符
+			// 灏唅nt杞崲涓哄瓧绗?
 			char[] chars = Character.toChars(n);
 			str.append(new String(chars));
 		}
 		return str.toString();
 	}
 }
+
+

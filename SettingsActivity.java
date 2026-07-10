@@ -1,4 +1,4 @@
-package com.brt.ibridge;
+﻿package com.brt.ibridge;
 
 import android.app.Activity;
 import android.content.Context;
@@ -22,9 +22,11 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.brt.ibridge.util.ViewFinder;
 import com.brt.bluetooth.ibridge.Ancs.AncsUtils;
 import com.brt.bluetooth.ibridge.BluetoothIBridgeAdapter;
 import com.brt.bluetooth.ibridge.BluetoothIBridgeDevice;
+import com.brt.ibridge.service.TestService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,7 +65,7 @@ public class SettingsActivity extends Activity implements BluetoothIBridgeAdapte
 
         setContentView(R.layout.activity_settings);
 
-        versionTextView = (TextView) findViewById(R.id.version);
+        versionTextView = ViewFinder.view(this, R.id.version);
         String demoVersionName;
         try {
             demoVersionName = pm.getPackageInfo(getPackageName(), 0).versionName;
@@ -78,7 +80,7 @@ public class SettingsActivity extends Activity implements BluetoothIBridgeAdapte
             versionTextView.setText("Version:" + demoVersionName);
         }
 
-        disconnectButton = (Button) findViewById(R.id.disconnect);
+        disconnectButton = ViewFinder.view(this, R.id.disconnect);
         disconnectButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -100,7 +102,7 @@ public class SettingsActivity extends Activity implements BluetoothIBridgeAdapte
             }
         });
 
-        saveAncsDeviceButton = (Button) findViewById(R.id.saveAncsDevice);
+        saveAncsDeviceButton = ViewFinder.view(this, R.id.saveAncsDevice);
         saveAncsDeviceButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -117,7 +119,7 @@ public class SettingsActivity extends Activity implements BluetoothIBridgeAdapte
             }
         });
 
-        phoneCallCheckBox = (CheckBox) findViewById(R.id.checkBoxPhoneCall);
+        phoneCallCheckBox = ViewFinder.view(this, R.id.checkBoxPhoneCall);
         phoneCallCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
@@ -131,7 +133,7 @@ public class SettingsActivity extends Activity implements BluetoothIBridgeAdapte
             }
         });
 
-        smsCheckBox = (CheckBox) findViewById(R.id.checkBoxSms);
+        smsCheckBox = ViewFinder.view(this, R.id.checkBoxSms);
         smsCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
@@ -143,7 +145,7 @@ public class SettingsActivity extends Activity implements BluetoothIBridgeAdapte
             }
         });
 
-        whiteListButton = (Button) findViewById(R.id.whiteList);
+        whiteListButton = ViewFinder.view(this, R.id.whiteList);
         whiteListButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -164,7 +166,7 @@ public class SettingsActivity extends Activity implements BluetoothIBridgeAdapte
             }
         });
 
-        mAppListView = (ListView) findViewById(R.id.app_list);
+        mAppListView = ViewFinder.view(this, R.id.app_list);
         mAppListView.setAdapter(mListAdapter);
         mAppListView.setOnItemClickListener(new ListView.OnItemClickListener() {
             @Override
@@ -190,8 +192,8 @@ public class SettingsActivity extends Activity implements BluetoothIBridgeAdapte
             }
         });
 
-        magThresholdEditView = (EditText) findViewById(R.id.magThreshold);
-        setMagThresholdButton = (Button) findViewById(R.id.setMagThreshold);
+        magThresholdEditView = ViewFinder.view(this, R.id.magThreshold);
+        setMagThresholdButton = ViewFinder.view(this, R.id.setMagThreshold);
         setMagThresholdButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -204,7 +206,7 @@ public class SettingsActivity extends Activity implements BluetoothIBridgeAdapte
         }
 
 
-        enableNotificationButton = (Button) findViewById(R.id.enableNotification);
+        enableNotificationButton = ViewFinder.view(this, R.id.enableNotification);
         enableNotificationButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -428,3 +430,4 @@ public class SettingsActivity extends Activity implements BluetoothIBridgeAdapte
     }
 
 }
+

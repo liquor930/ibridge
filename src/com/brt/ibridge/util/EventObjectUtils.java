@@ -1,4 +1,4 @@
-package com.brt.ibridge;
+﻿package com.brt.ibridge.util;
 
 import java.util.ArrayList;
 
@@ -12,7 +12,7 @@ public class EventObjectUtils {
 	private static final EventObjectUtils SAMPLE_EVENT_OBJECT_1 = new EventObjectUtils(
 			SAMPLE_EVENT_1);
 	private static final EventObjectUtils SAMPLE_EVENT_OBJECT_2 = new EventObjectUtils(
-			SAMPLE_EVENT_1);
+			SAMPLE_EVENT_2);
 
 	private static ArrayList<EventObjectUtils> list = new ArrayList<EventObjectUtils>();
 
@@ -43,7 +43,7 @@ public class EventObjectUtils {
 				try {
 					obj.wait(millis);
 				} catch (InterruptedException e) {
-					e.printStackTrace();
+					Log.e(TAG, "Exception", e);
 				}
 			}
 		}
@@ -93,3 +93,4 @@ public class EventObjectUtils {
 		return "Event(" + event + ")";
 	}
 }
+

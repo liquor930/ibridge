@@ -1,4 +1,8 @@
-package com.brt.ibridge;
+﻿package com.brt.ibridge.ui;
+
+import com.brt.ibridge.MainActivity;
+import com.brt.ibridge.SettingsActivity;
+import com.brt.ibridge.Switcher;
 
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
@@ -54,20 +58,20 @@ public class DescriptionView extends Screen implements BluetoothIBridgeAdapter.E
     public DescriptionView(final Context context, View view) {
         super(context, view);
 
-        mDescriptionText = (TextView) findViewById(R.id.description);
-        mServiceUUIDEdit = (EditText) findViewById(R.id.serviceUUID);
-        mWriteUUIDEdit = (EditText) findViewById(R.id.wrtieUUID);
-        mNotifyUUIDEdit = (EditText) findViewById(R.id.notifyUUID);
-        mMtuEdit = (EditText) findViewById(R.id.mtu);
-        mMtuSetSupportedText = (TextView) findViewById(R.id.mtuSetSupported);
+        mDescriptionText = find(R.id.description);
+        mServiceUUIDEdit = find(R.id.serviceUUID);
+        mWriteUUIDEdit = find(R.id.wrtieUUID);
+        mNotifyUUIDEdit = find(R.id.notifyUUID);
+        mMtuEdit = find(R.id.mtu);
+        mMtuSetSupportedText = find(R.id.mtuSetSupported);
 
         if (Build.VERSION.SDK_INT >= 21) {
-            mMtuSetSupportedText.setText("(增大MTU可以提高速度)");
+            mMtuSetSupportedText.setText("(澧炲ぇMTU鍙互鎻愰珮閫熷害)");
         } else {
-            mMtuSetSupportedText.setText("(不支持)");
+            mMtuSetSupportedText.setText("(涓嶆敮鎸?");
         }
 
-        mNextButton = (Button) findViewById(R.id.next);
+        mNextButton = find(R.id.next);
         mNextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -92,7 +96,7 @@ public class DescriptionView extends Screen implements BluetoothIBridgeAdapter.E
             }
         });
 
-        mWifiConfigButton = (Button) findViewById(R.id.wifiConfig);
+        mWifiConfigButton = find(R.id.wifiConfig);
         mWifiConfigButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -102,7 +106,7 @@ public class DescriptionView extends Screen implements BluetoothIBridgeAdapter.E
             }
         });
 
-        mAncsButton = (Button) findViewById(R.id.ancs);
+        mAncsButton = find(R.id.ancs);
         mAncsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -336,3 +340,4 @@ public class DescriptionView extends Screen implements BluetoothIBridgeAdapter.E
         }
     }
 }
+

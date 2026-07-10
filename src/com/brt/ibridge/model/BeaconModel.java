@@ -1,4 +1,4 @@
-package com.brt.ibridge;
+package com.brt.ibridge.model;
 
 import android.bluetooth.BluetoothDevice;
 

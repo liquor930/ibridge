@@ -1,4 +1,6 @@
-package com.brt.ibridge;
+package com.brt.ibridge.service;
+
+import com.brt.ibridge.TestService;
 
 import android.content.ComponentName;
 import android.content.Context;

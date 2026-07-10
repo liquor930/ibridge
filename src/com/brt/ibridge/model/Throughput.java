@@ -1,4 +1,4 @@
-package com.brt.ibridge.common;
+package com.brt.ibridge.model;
 
 /**
  * Created by Administrator on 2017/1/5.

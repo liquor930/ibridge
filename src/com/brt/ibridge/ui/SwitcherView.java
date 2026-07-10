@@ -1,4 +1,6 @@
-package com.brt.ibridge;
+package com.brt.ibridge.ui;
+
+import com.brt.ibridge.Switcher;
 
 import android.content.Context;
 import android.util.AttributeSet;

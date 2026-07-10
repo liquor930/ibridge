@@ -1,10 +1,15 @@
-package com.brt.ibridge;
+package com.brt.ibridge.service;
+
+import com.brt.ibridge.MainActivity;
+import com.brt.ibridge.PermissionRequestActivity;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import androidx.core.app.NotificationCompat;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -309,7 +314,24 @@ public class TestService extends Service implements EventReceiver {
 		}
 	}
 
+	private static final String CHANNEL_ID = "ibridge_foreground";
+
+	private void createNotificationChannel() {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+			NotificationChannel channel = new NotificationChannel(
+					CHANNEL_ID,
+					"iBridge 前台服务",
+					NotificationManager.IMPORTANCE_LOW
+			);
+			channel.setDescription("蓝牙后台服务通知");
+			NotificationManager nm = getSystemService(NotificationManager.class);
+			if (nm != null) nm.createNotificationChannel(channel);
+		}
+	}
+
 	private void startForeground() {
+		createNotificationChannel();
+
 		Intent it = new Intent(this, MainActivity.class);
 		it.setAction(Intent.ACTION_MAIN);
 		it.addCategory(Intent.CATEGORY_LAUNCHER);
@@ -317,10 +339,15 @@ public class TestService extends Service implements EventReceiver {
 		PendingIntent pit = PendingIntent.getActivity(this, 0, it,
 				PendingIntent.FLAG_IMMUTABLE);
 
-		Notification ntfc = new Notification(R.drawable.ic_launcher, getString(R.string.app_name),
-				System.currentTimeMillis());
-		//ntfc.setLatestEventInfo(this, getString(R.string.connected), null,pit);
-		ntfc.flags |= Notification.FLAG_ONGOING_EVENT;
+		Notification ntfc = new NotificationCompat.Builder(this, CHANNEL_ID)
+				.setContentTitle(getString(R.string.app_name))
+				.setContentText("蓝牙服务运行中")
+				.setSmallIcon(R.drawable.ic_launcher)
+				.setContentIntent(pit)
+				.setOngoing(true)
+				.build();
+
+		startForeground(0x37512433, ntfc);
 	}
 
 	private void startMainActivity() {

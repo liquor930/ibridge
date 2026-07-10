@@ -1,4 +1,6 @@
-package com.brt.ibridge;
+﻿package com.brt.ibridge.ui;
+
+import com.brt.ibridge.Switcher;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -36,7 +38,7 @@ public class WifiConfigView extends Screen implements BluetoothIBridgeAdapter.Da
         myHandler = new MyHandler(this);
         mSSIDs = new ArrayList<>();
 
-        mListView = (ListView) findViewById(R.id.ssidList);
+        mListView = find(R.id.ssidList);
         mListView.setAdapter(mListAdapter);
 
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -143,7 +145,7 @@ public class WifiConfigView extends Screen implements BluetoothIBridgeAdapter.Da
                 myHandler.obtainMessage(MyHandler.MSG_RECEIVED_STRING, result)
                         .sendToTarget();
             } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
+                Log.e(TAG, "Exception", e);
             }
         }
     }
@@ -181,3 +183,5 @@ public class WifiConfigView extends Screen implements BluetoothIBridgeAdapter.Da
         }
     }
 }
+
+

@@ -1,10 +1,13 @@
-package com.brt.ibridge;
+﻿package com.brt.ibridge.ui;
+
+import com.brt.ibridge.Switcher;
+import com.brt.ibridge.SettingsActivity;
+import com.brt.ibridge.model.BeaconModel;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
-import android.text.InputFilter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -46,15 +49,15 @@ public class DeviceView extends Screen implements EventReceiver {
         super(context, view);
 
         mDevices = new ArrayList<BluetoothIBridgeDevice>();
-        mClassicSelected = (CheckBox) findViewById(R.id.classicSelected);
+        mClassicSelected = find(R.id.classicSelected);
         mClassicSelected.setChecked(true);
-        mBLESelected = (CheckBox) findViewById(R.id.bleSelected);
+        mBLESelected = find(R.id.bleSelected);
         if (!BluetoothIBridgeAdapter.bleIsSupported()) {
             mBLESelected.setEnabled(false);
         }
-        Search_RSSI = ((EditText) findViewById(R.id.et_serch_rssi));
-        Search_ADDR = ((EditText) findViewById(R.id.et_serch_addr));
-        mSearchBtn = ((Button) findViewById(R.id.discovery));
+        Search_RSSI = (find(R.id.et_serch_rssi));
+        Search_ADDR = (find(R.id.et_serch_addr));
+        mSearchBtn = (find(R.id.discovery));
         mSearchBtn.setOnClickListener(new OnClickListener() {
 
             @Override
@@ -66,17 +69,17 @@ public class DeviceView extends Screen implements EventReceiver {
                 int convertedNumber = 0;
 
                 if (mAdapter == null) {
-                    // 替换为你App中创建BluetoothIBridgeAdapter实例的真实逻辑
-                    // 示例：从上下文/全局单例中获取或重新创建Adapter
+                    // 鏇挎崲涓轰綘App涓垱寤築luetoothIBridgeAdapter瀹炰緥鐨勭湡瀹為€昏緫
+                    // 绀轰緥锛氫粠涓婁笅鏂?鍏ㄥ眬鍗曚緥涓幏鍙栨垨閲嶆柊鍒涘缓Adapter
                     mAdapter = BluetoothIBridgeAdapter.sharedInstance(context);
-                    // 重新注册事件接收器（和setBluetoothAdapter逻辑对齐）
+                    // 閲嶆柊娉ㄥ唽浜嬩欢鎺ユ敹鍣紙鍜宻etBluetoothAdapter閫昏緫瀵归綈锛?
                     mAdapter.registerEventReceiver(DeviceView.this);
-                    // 提示用户稍等（可选）
-                    //Toast.makeText(context, "正在初始化蓝牙适配器...", Toast.LENGTH_SHORT).show();
+                    // 鎻愮ず鐢ㄦ埛绋嶇瓑锛堝彲閫夛級
+                    //Toast.makeText(context, "姝ｅ湪鍒濆鍖栬摑鐗欓€傞厤鍣?..", Toast.LENGTH_SHORT).show();
 
-                    // 若创建失败，直接提示并返回
+                    // 鑻ュ垱寤哄け璐ワ紝鐩存帴鎻愮ず骞惰繑鍥?
                     if (mAdapter == null) {
-                        Toast.makeText(context, "蓝牙适配器初始化失败，请检查权限后重试", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context, "钃濈墮閫傞厤鍣ㄥ垵濮嬪寲澶辫触锛岃妫€鏌ユ潈闄愬悗閲嶈瘯", Toast.LENGTH_SHORT).show();
                         return;
                     }
                 }
@@ -114,7 +117,7 @@ public class DeviceView extends Screen implements EventReceiver {
 
         });
 
-        mSettingsBtn = (Button) findViewById(R.id.setting);
+        mSettingsBtn = find(R.id.setting);
         mSettingsBtn.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -124,7 +127,7 @@ public class DeviceView extends Screen implements EventReceiver {
             }
         });
 
-        mListView = (ListView) findViewById(R.id.deviceList);
+        mListView = find(R.id.deviceList);
         mListView.setAdapter(mListAdapter);
         mListView.setOnItemClickListener(new OnItemClickListener() {
 
@@ -171,22 +174,22 @@ public class DeviceView extends Screen implements EventReceiver {
             }
         });
 
-        mHintVeiw = (TextView) findViewById(R.id.hint);
-        mHintVeiw.setText("使用说明:\n" +
-                "[Discovery]搜索周围的蓝牙设备\n" +
-                "[BLE]是低功耗蓝牙\n" +
-                "[CALSSIC]是传统蓝牙\n" +
-                "在搜索到的设备条目点击,可以进入到连接界面\n" +
-                "在搜索到的设备条目长按,可以进入到配置界面");
+        mHintVeiw = find(R.id.hint);
+        mHintVeiw.setText("浣跨敤璇存槑:\n" +
+                "[Discovery]鎼滅储鍛ㄥ洿鐨勮摑鐗欒澶嘰n" +
+                "[BLE]鏄綆鍔熻€楄摑鐗橽n" +
+                "[CALSSIC]鏄紶缁熻摑鐗橽n" +
+                "鍦ㄦ悳绱㈠埌鐨勮澶囨潯鐩偣鍑?鍙互杩涘叆鍒拌繛鎺ョ晫闈n" +
+                "鍦ㄦ悳绱㈠埌鐨勮澶囨潯鐩暱鎸?鍙互杩涘叆鍒伴厤缃晫闈?);
         mHintVeiw.setTextColor(Color.GRAY);
         mHintVeiw.setTextSize(16);
     }
 
     /**
-     * bytes转换成十六进制字符串
+     * bytes杞崲鎴愬崄鍏繘鍒跺瓧绗︿覆
      *
-     * @param b byte数组
-     * @return String 每个Byte值之间空格分隔
+     * @param b byte鏁扮粍
+     * @return String 姣忎釜Byte鍊间箣闂寸┖鏍煎垎闅?
      */
     public static String byte2HexStr(byte[] b, boolean space) {
         String stmp = "";
@@ -313,7 +316,7 @@ public class DeviceView extends Screen implements EventReceiver {
     public class RssiComparator implements Comparator<BluetoothIBridgeDevice> {
         @Override
         public int compare(BluetoothIBridgeDevice device1, BluetoothIBridgeDevice device2) {
-            // 根据RSSI值比较大小，这里按照RSSI值从大到小排序
+            // 鏍规嵁RSSI鍊兼瘮杈冨ぇ灏忥紝杩欓噷鎸夌収RSSI鍊间粠澶у埌灏忔帓搴?
             return Integer.compare(device2.getRssi(), device1.getRssi());
         }
     }
@@ -413,30 +416,28 @@ public class DeviceView extends Screen implements EventReceiver {
     }
 
     public void setBluetoothAdapter(BluetoothIBridgeAdapter adapter) {
-        // 第一步：先注销旧适配器的接收器（防止内存泄漏+空指针）
+        // 鍏堟敞閿€鏃ч€傞厤鍣ㄧ殑鎺ユ敹鍣?
         if (mAdapter != null) {
             try {
                 mAdapter.unregisterEventReceiver(this);
             } catch (Exception e) {
-                // 捕获注销异常，避免崩溃
-                e.printStackTrace();
+                Log.e(TAG, "Exception", e);
             }
             mAdapter = null;
         }
 
-        // 第二步：仅当新adapter非空时，赋值并注册接收器
+        // 鏂癮dapter闈炵┖鏃惰祴鍊煎苟娉ㄥ唽
         if (adapter != null) {
             mAdapter = adapter;
-            // 增加二次空值校验，兜底防止adapter实际为null
-            if (mAdapter != null) {
-                try {
-                    mAdapter.registerEventReceiver(this);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    Toast.makeText(mContext, "蓝牙适配器注册失败", Toast.LENGTH_SHORT).show();
-                    mAdapter = null; // 注册失败则置空，避免后续误用
-                }
+            try {
+                mAdapter.registerEventReceiver(this);
+            } catch (Exception e) {
+                Log.e(TAG, "Exception", e);
+                Toast.makeText(mContext, "钃濈墮閫傞厤鍣ㄦ敞鍐屽け璐?, Toast.LENGTH_SHORT).show();
+                mAdapter = null;
             }
         }
     }
 }
+
+
