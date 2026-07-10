@@ -1,4 +1,4 @@
-﻿package com.brt.ibridge.ui;
+package com.brt.ibridge.ui;
 
 import com.brt.ibridge.MainActivity;
 import com.brt.ibridge.SettingsActivity;
@@ -66,9 +66,9 @@ public class DescriptionView extends Screen implements BluetoothIBridgeAdapter.E
         mMtuSetSupportedText = find(R.id.mtuSetSupported);
 
         if (Build.VERSION.SDK_INT >= 21) {
-            mMtuSetSupportedText.setText("(澧炲ぇMTU鍙互鎻愰珮閫熷害)");
+            mMtuSetSupportedText.setText("(增大MTU可以提高速度)");
         } else {
-            mMtuSetSupportedText.setText("(涓嶆敮鎸?");
+            mMtuSetSupportedText.setText("(不支持)");
         }
 
         mNextButton = find(R.id.next);
