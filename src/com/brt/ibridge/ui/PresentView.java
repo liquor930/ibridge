@@ -42,6 +42,9 @@ import com.brt.bluetooth.ibridge.BluetoothIBridgeAdapter.EventReceiver;
 import com.brt.bluetooth.ibridge.BluetoothIBridgeDevice;
 
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
 import java.text.DecimalFormat;
@@ -711,6 +714,9 @@ public class PresentView extends Screen implements DataReceiver, EventReceiver {
 				mData[i] = (byte)(0x35 + is);
 			}
 		}
+
+		@Override
+		public void run() {
 			long start = System.currentTimeMillis();
 			long finish;
 			float speed;
@@ -732,8 +738,8 @@ public class PresentView extends Screen implements DataReceiver, EventReceiver {
 						&& mSelectedDevice.isConnected()) {
 					mAdapter.send(mSelectedDevice, mData, mData.length);
 					finish = System.currentTimeMillis();
-					throughput.datalength += data.length;
-					speed = (data.length * i)/((float)(finish - start)/1000);
+					throughput.datalength += mData.length;
+					speed = (mData.length * i)/((float)(finish - start)/1000);
 					DecimalFormat df=new DecimalFormat(".#");
 					writeSpeed = (i+1) + "/" + time + "," + df.format(speed/1000) + "KByte/s";
 					throughput.resultText = writeSpeed;

@@ -15,6 +15,7 @@ import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.util.Log;
 import android.widget.TextView;
 
 import com.brt.bluetooth.ibridge.BluetoothIBridgeAdapter;
@@ -28,6 +29,8 @@ import java.util.ArrayList;
  * Created by qiuwenqing on 15/10/29.
  */
 public class WifiConfigView extends Screen implements BluetoothIBridgeAdapter.DataReceiver {
+	private static final String TAG = "WifiConfigView";
+
     private BluetoothIBridgeAdapter mAdapter = null;
     private MyHandler myHandler;
     private ListView mListView;

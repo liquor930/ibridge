@@ -1,8 +1,12 @@
 ﻿package com.brt.ibridge.util;
 
+import android.util.Log;
+
 import java.util.ArrayList;
 
 public class EventObjectUtils {
+	private static final String TAG = "EventObjectUtils";
+
 	public static int SAMPLE_EVENT_0 = 0;
 	public static int SAMPLE_EVENT_1 = 1;
 	public static int SAMPLE_EVENT_2 = 2;
