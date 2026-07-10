@@ -1,18 +1,16 @@
-﻿package com.brt.ibridge;
+package com.brt.ibridge;
 
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Intent;
-import android.net.Uri;
-import android.provider.Settings;
 import android.content.Context;
 import android.content.DialogInterface;
-
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.widget.Toast;
@@ -23,9 +21,6 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import com.brt.bluetooth.ibridge.BluetoothIBridgeAdapter;
-import com.brt.ibridge.service.ServiceBinder;
-import com.brt.ibridge.ui.SwitcherView;
-import com.brt.ibridge.util.ViewFinder;
 import com.permissionx.guolindev.PermissionX;
 import com.permissionx.guolindev.callback.ExplainReasonCallback;
 import com.permissionx.guolindev.callback.RequestCallback;
@@ -67,9 +62,9 @@ public class MainActivity extends Activity {
                 ActivityCompat.requestPermissions(this, permissions, SET_REQUEST_CODE);
             }
         } else {
-            // 楂樼増鏈?Android 12+)锛氫慨澶嶆牳蹇冮€昏緫
-            newPermissions.clear(); // 鍏堟竻绌猴紝閬垮厤閲嶅娣诲姞
-            // 1. 鍏堟坊鍔犺摑鐗?瀹氫綅鏍稿績鏉冮檺锛屽厛鍒ゆ柇鏄惁缂哄け鍐嶆坊鍔?
+            // 高版本(Android 12+)：修复核心逻辑
+            newPermissions.clear(); // 先清空，避免重复添加
+            // 1. 先添加蓝牙+定位核心权限，先判断是否缺失再添加
             String[] corePermissions = new String[]{
                     Manifest.permission.ACCESS_FINE_LOCATION,
                     Manifest.permission.ACCESS_COARSE_LOCATION,
@@ -83,16 +78,16 @@ public class MainActivity extends Activity {
                     newPermissions.add(p);
                 }
             }
-            // 2. 鍐嶅垽鏂瓨鍌ㄦ潈闄愶紝缂哄け鍒欐坊鍔?
+            // 2. 再判断存储权限，缺失则添加
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                 newPermissions.add(Manifest.permission.READ_EXTERNAL_STORAGE);
                 newPermissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
             }
-            // 3. 鍙鏈変换鎰忔潈闄愮己澶憋紝灏辩粺涓€璇锋眰锛堣В闄ゅ祵濂楋紝鏍稿績淇锛?
+            // 3. 只要有任意权限缺失，就统一请求（解除嵌套，核心修复）
             if (!newPermissions.isEmpty()) {
-                String[] requestPerms = newPermissions.toArray(new String[0]); // 绠€鍖栨暟缁勮浆鎹?
-                Log.d("test", "鏉冮檺璇锋眰鏁扮粍len 锛? + requestPerms.length);
-                // 缁熶竴浣跨敤SET_REQUEST_CODE锛屾柟渚垮悗缁鐞嗙粨鏋?
+                String[] requestPerms = newPermissions.toArray(new String[0]); // 简化数组转换
+                Log.d("test", "权限请求数组len ：" + requestPerms.length);
+                // 统一使用SET_REQUEST_CODE，方便后续处理结果
                 ActivityCompat.requestPermissions(this, requestPerms, SET_REQUEST_CODE);
             }
         }
@@ -115,21 +110,18 @@ public class MainActivity extends Activity {
 //                if (grantResults.length > 0) {
 //                    for (int i = 0; i < grantResults.length; i++) {
 //                        if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
-//                            Log.i(TAG, "缂哄皯鏉冮檺");
+//                            Log.i(TAG, "缺少权限");
 //                        }
 //                    }
 //                }
                 if (grantResults.length > 0) {
                     List<String> deniedPerms = new ArrayList<>();
+                    // 收集所有被拒绝的权限
                     for (int i = 0; i < grantResults.length; i++) {
                         if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
                             deniedPerms.add(permissions[i]);
-                            Log.e(TAG, "缂哄皯鏉冮檺锛? + permissions[i]);
+                            Log.i(TAG, "缺少权限：" + permissions[i]);
                         }
-                    }
-                    // 鏈夋潈闄愯鎷掔粷锛屽紩瀵肩敤鎴峰幓绯荤粺璁剧疆
-                    if (!deniedPerms.isEmpty()) {
-                        showPermissionSettingsDialog();
                     }
                 }
                 break;
@@ -137,6 +129,21 @@ public class MainActivity extends Activity {
                 break;
         }
     }
+
+    /*
+        private void checkConnectionTriggered() {
+            Bundle b = getIntent().getExtras();
+            if (b != null) {
+                BluetoothIBridgeDevice dev = b
+                        .getParcelable("com.brt.bleSpp.device");
+                if (dev != null) {
+                    if (mSwitcherView != null) {
+                        mSwitcherView.onCreateAsDeviceConnected(dev);
+                    }
+                }
+            }
+        }
+        */
 
     @Override
     protected void onDestroy() {
@@ -181,7 +188,7 @@ public class MainActivity extends Activity {
                 builder.setPositiveButton(android.R.string.yes,
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int arg0) {
-                                BluetoothIBridgeAdapter.sharedInstance(null).stopDiscovery();
+                                mBinder.getiBridgeAdapter().stopDiscovery();
                                 finishAndRemoveTask();
                             }
                         }).setNegativeButton(android.R.string.no,
@@ -196,21 +203,4 @@ public class MainActivity extends Activity {
         return super.onKeyDown(keyCode, event);
     }
 
-    /**
-     * 鏉冮檺琚嫆缁濆悗寮曞鐢ㄦ埛鍘荤郴缁熻缃〉
-     */
-    private void showPermissionSettingsDialog() {
-        new AlertDialog.Builder(this)
-                .setTitle("闇€瑕佽摑鐗欐潈闄?)
-                .setMessage("iBridge 闇€瑕佽摑鐗欏拰浣嶇疆鏉冮檺鎵嶈兘姝ｅ父宸ヤ綔銆傝鍦ㄧ郴缁熻缃腑鍏佽鐩稿叧鏉冮檺銆?)
-                .setPositiveButton("鍘昏缃?, (dialog, which) -> {
-                    Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                    intent.setData(Uri.parse("package:" + getPackageName()));
-                    startActivity(intent);
-                })
-                .setNegativeButton("鍙栨秷", null)
-                .show();
-    }
-
 }
-
